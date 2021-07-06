@@ -258,9 +258,9 @@ function updateRightCCWRotation(){
 	console.log("Local Matrix:");
 	console.log(localMatrix);
 	for(var i = 0; i < 3; i++){
-		topLevelCubes[i][2] = localMatrix[i][0]+""; 
-		middleLevelCubes[i][2] = localMatrix[i][1]+"";
-		bottomLevelCubes[i][2] = localMatrix[i][2]+"";
+		topLevelCubes[i][2] = localMatrix[2-i][0]+""; 
+		middleLevelCubes[i][2] = localMatrix[2-i][1]+"";
+		bottomLevelCubes[i][2] = localMatrix[2-i][2]+"";
 	}
 	console.log("Right CCW Rotation");
 	console.log(topLevelCubes);
