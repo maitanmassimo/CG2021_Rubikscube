@@ -13,46 +13,50 @@ var obj_files = [
 ];
 var texture_url = "lib/models/Rubiks Cube.png";
 var gl = null,
-	program = null,
-	mesh = null;
-	var cubeWorldMatrix;    //One world matrix for each cube...
-	var objStr;
-	//Light params
-	var lightColor = [0.1, 1.0, 1.0];
-	var lightPos = [0.0, 1.5, 2.0,1.0];
-	var lightTarget = 10;
-	var lightDecay = 0;
-	//Define material color
-	var cubeMaterialColor = [0.5, 0.5, 0.5];
-	var lookRadius = 10;
-	var vao = new Array();
-	var modelVertices = new Array();
-	var modelIndices =  new Array();
-	var modelTexCoords = new Array();
-	var uvLocation = new Array();
+program = null,
+mesh = null;
+var cubeWorldMatrix;    //One world matrix for each cube...
+var objStr;
+//Light params
+var lightColor = [0.1, 1.0, 1.0];
+var lightPos = [0.0, 1.5, 2.0,1.0];
+var lightTarget = 10;
+var lightDecay = 0;
+//Define material color
+var cubeMaterialColor = [0.5, 0.5, 0.5];
+var lookRadius = 10;
+var vao = new Array();
+var modelVertices = new Array();
+var modelIndices =  new Array();
+var modelTexCoords = new Array();
+var uvLocation = new Array();
 
-	var lastUpdateTime = (new Date).getTime();
-	//Camera parameters
-	var cx = 10.0;
-	var cy = 10.0;
-	var cz = 2.5;
-	var elevation = -45.0;
-	var angle = -40.0;
-	var ind = 0;
-	//Model parameters
-	var cubeTx = new Array();//0.0;
-	var cubeTy = new Array();//0.0;
-	var cubeTz = new Array();//-1.0;
-	var cubeRx = new Array();//0.0;
-	var cubeRy = new Array();//0.0;
-	var cubeRz = new Array();//0.0;
-	var cubeS = new Array();//0.5;
+var lastUpdateTime = (new Date).getTime();
+//Camera parameters
+var cx = 10.0;
+var cy = 10.0;
+var cz = 2.5;
+var elevation = -45.0;
+var angle = -40.0;
+var ind = 0;
+//Model parameters
+var cubeTx = new Array();//0.0;
+var cubeTy = new Array();//0.0;
+var cubeTz = new Array();//-1.0;
+var cubeRx = new Array();//0.0;
+var cubeRy = new Array();//0.0;
+var cubeRz = new Array();//0.0;
+var cubeS = new Array();//0.5;
 
-	var topLevelCubes = [["22", "12", "02"],["21", "11", "01"],["20","10", "00"]];
-	var middleLevelCubes = [["22M", "12M", "02M"],["21M", "EMPTY", "01M"],["20M","10M", "00M"]];
-	var bottomLevelCubes = [["22B", "12B", "02B"],["21B", "11B", "01B"],["20B","10B", "00B"]];
-	var k=true;
-	var map = {};	
+
+var locQuaternions = new Array();
+
+var topLevelCubes = [["22", "12", "02"],["21", "11", "01"],["20","10", "00"]];
+var middleLevelCubes = [["22M", "12M", "02M"],["21M", "EMPTY", "01M"],["20M","10M", "00M"]];
+var bottomLevelCubes = [["22B", "12B", "02B"],["21B", "11B", "01B"],["20B","10B", "00B"]];
+var k=true;
+var map = {};	
+var delta_rot = 1;
 
 
 
@@ -61,41 +65,69 @@ cubeWorldMatrix = utils.MakeWorld( 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.5);
 keyFunction = function(e){
     //e = e || event; // to deal with IE
     map[e.keyCode] = e.type == 'keydown';
-    
-	console.log(map);
+
 
 	if (map[76]&& map[16]) {	// L
-		displayLeftCCWRotation();
 		updateLeftCCWRotation();
+		displayLeftCCWRotation();
+		
 	}else if(map[76] && !map[16]){
-		displayLeftCWRotation();
+
 		updateLeftCWRotation();
+		displayLeftCWRotation();
 		
-	}
-	else if (map[82] && map[16]) {	// R
-		displayRightCCWRotation();
+	}else if (map[82] && map[16]) {	// R
+
 		updateRightCCWRotation();
+		displayRightCCWRotation();
+		
 	}else if(map[82] && !map[16]){
-		displayRightCWRotation();
+
 		updateRightCWRotation();
-		
-	}
-	else if (map[84] && map[16]) {	// T	
-		displayTopCCWRotation();
+		displayRightCWRotation();
+				
+	}	else if (map[84] && map[16]) {	// T	
+
 		updateTopCCWRotation();
+		displayTopCCWRotation();
+		
 	}else if(map[84] && !map[16]){
-		displayTopCWRotation();
+
 		updateTopCWRotation();
-		
-	}
-	else if (map[66] && map[16]) {	// T	
-		displayBottomCCWRotation();
+		displayTopCWRotation();
+				
+	}else if (map[68] && map[16]) {	// D	
+
 		updateBottomCCWRotation();
-	}else if(map[66] && !map[16]){
-		displayBottomCWRotation();
-		updateBottomCWRotation();
+		displayBottomCCWRotation();
 		
+	}else if(map[68] && !map[16]){
+
+		updateBottomCWRotation();
+		displayBottomCWRotation();
+				
+	}else if (map[70] && map[16]) {	// F
+
+		updateFrontCCWRotation();
+		displayFrontCCWRotation();
+		
+	}else if(map[70] && !map[16]){
+
+		updateFrontCWRotation();
+		displayFrontCWRotation();
+				
+	}else if (map[66] && map[16]) {	// B
+
+		updateBackCCWRotation();
+		displayBackCCWRotation();
+		
+	}else if(map[66] && !map[16]){
+
+		updateBackCWRotation();	
+		displayBackCWRotation();
+			
 	}
+	
 }
 
 keyClear = function(e){
@@ -200,75 +232,99 @@ function doMouseWheel(event) {
 }
 
 function updateRightCWRotation(){
-	let topTmp = topLevelCubes.map(function(value,index) { return value[2]; }); //takes the last column
-	let middleTmp = middleLevelCubes.map(function(value,index) { return value[2]; }); //takes the last column
-	let bottomTmp = bottomLevelCubes.map(function(value,index) { return value[2]; }); //takes the last column
-	var localMatrix = [topTmp,middleTmp, bottomTmp];
-	
-	for(var i = 0; i < 3; i++){
-		
-		topLevelCubes[i][2] = localMatrix[i][2]; 
-		middleLevelCubes[i][2] = localMatrix[i][1];		
-		bottomLevelCubes[i][2] = localMatrix[i][0];		
+	let topTmp = [topLevelCubes[0][2], topLevelCubes[1][2], topLevelCubes[2][2]] ;
+	let middleTmp = [middleLevelCubes[0][2], middleLevelCubes[1][2], middleLevelCubes[2][2]] ;
+	let bottomTmp = [bottomLevelCubes[0][2], bottomLevelCubes[1][2], bottomLevelCubes[2][2]] ;
+	let localMatrix = [topTmp,middleTmp, bottomTmp];	
+	console.log("Local Matrix:");
+	console.log(localMatrix);
+	for(var i = 0; i < 3; i++){		
+		topLevelCubes[i][2] = localMatrix[i][2]+""; 
+		middleLevelCubes[i][2] = localMatrix[i][1]+"";		
+		bottomLevelCubes[i][2] = localMatrix[i][0]+"";		
 	}	
+	console.log("Right CW Rotation");
+	console.log(topLevelCubes);
+	console.log(middleLevelCubes);
+	console.log(bottomLevelCubes);
+	console.log("---------------------------");
 }
 
 function updateRightCCWRotation(){
-	let topTmp = topLevelCubes.map(function(value,index) { return value[2]; }); //takes the last column
-	let middleTmp = middleLevelCubes.map(function(value,index) { return value[2]; }); //takes the last column
-	let bottomTmp = bottomLevelCubes.map(function(value,index) { return value[2]; }); //takes the last column
-	var localMatrix = [topTmp,middleTmp, bottomTmp];
-	
+	let topTmp = [topLevelCubes[0][2], topLevelCubes[1][2], topLevelCubes[2][2]] ;
+	let middleTmp = [middleLevelCubes[0][2], middleLevelCubes[1][2], middleLevelCubes[2][2]] ;
+	let bottomTmp = [bottomLevelCubes[0][2], bottomLevelCubes[1][2], bottomLevelCubes[2][2]] ;
+	let localMatrix = [topTmp,middleTmp, bottomTmp];	
+	console.log("Local Matrix:");
+	console.log(localMatrix);
 	for(var i = 0; i < 3; i++){
-		topLevelCubes[i][2] = localMatrix[i][0]; 
-		middleLevelCubes[i][2] = localMatrix[i][1];
-		bottomLevelCubes[i][2] = localMatrix[i][2];
+		topLevelCubes[i][2] = localMatrix[i][0]+""; 
+		middleLevelCubes[i][2] = localMatrix[i][1]+"";
+		bottomLevelCubes[i][2] = localMatrix[i][2]+"";
 	}
+	console.log("Right CCW Rotation");
+	console.log(topLevelCubes);
+	console.log(middleLevelCubes);
+	console.log(bottomLevelCubes);
+	console.log("---------------------------");
 }
 
 function updateLeftCWRotation(){
-	let topTmp = topLevelCubes.map(function(value,index) { return value[0]; }); //takes the last column
-	let middleTmp = middleLevelCubes.map(function(value,index) { return value[0]; }); //takes the last column
-	let bottomTmp = bottomLevelCubes.map(function(value,index) { return value[0]; }); //takes the last column
-	var localMatrix = [topTmp,middleTmp, bottomTmp];
-	
-	for(var i = 0; i < 3; i++){
-		
-		topLevelCubes[i][0] = localMatrix[i][2]; 
-		middleLevelCubes[i][0] = localMatrix[i][1];		
-		bottomLevelCubes[i][0] = localMatrix[i][0];		
-	}	
-}
-
-function updateLeftCCWRotation(){
-	let topTmp = topLevelCubes.map(function(value,index) { return value[0]; }); //takes the last column
-	let middleTmp = middleLevelCubes.map(function(value,index) { return value[0]; }); //takes the last column
-	let bottomTmp = bottomLevelCubes.map(function(value,index) { return value[0]; }); //takes the last column
-	var localMatrix = [topTmp,middleTmp, bottomTmp];
-	
-	for(var i = 0; i < 3; i++){
-		
-		topLevelCubes[i][0] = localMatrix[i][0]; 
-		middleLevelCubes[i][0] = localMatrix[i][1];		
-		bottomLevelCubes[i][0] = localMatrix[i][2];		
-	}	
-}
-
-function updateTopCCWRotation(){
-	
-	let row1 = [topLevelCubes[0][0], topLevelCubes[0][1], topLevelCubes[0][2]] ;
-	let row2 = [topLevelCubes[1][0], topLevelCubes[1][1], topLevelCubes[1][2]] ;
-	let row3 = [topLevelCubes[2][0], topLevelCubes[2][1], topLevelCubes[2][2]] ;
-
-	var localMatrix = [row1, row2, row3];
+	let topTmp = [topLevelCubes[0][0], topLevelCubes[1][0], topLevelCubes[2][0]] ;
+	let middleTmp = [middleLevelCubes[0][0], middleLevelCubes[1][0], middleLevelCubes[2][0]] ;
+	let bottomTmp = [bottomLevelCubes[0][0], bottomLevelCubes[1][0], bottomLevelCubes[2][0]] ;
+	let localMatrix = [topTmp,middleTmp, bottomTmp];
+	console.log("Local Matrix:");
 	console.log(localMatrix);
 	for(var i = 0; i < 3; i++){
 		
-		topLevelCubes[i][0] = localMatrix[0][2-i]; 	
-		topLevelCubes[i][1] = localMatrix[1][2-i]; 
-		topLevelCubes[i][2] = localMatrix[2][2-i]; 
+		topLevelCubes[i][0] = localMatrix[i][2]+""; 
+		middleLevelCubes[i][0] = localMatrix[i][1]+"";		
+		bottomLevelCubes[i][0] = localMatrix[i][0]+"";		
 	}	
+	console.log("Left CW Rotation");
 	console.log(topLevelCubes);
+	console.log(middleLevelCubes);
+	console.log(bottomLevelCubes);
+	console.log("---------------------------");
+}
+
+function updateLeftCCWRotation(){
+	let topTmp = [topLevelCubes[0][0], topLevelCubes[1][0], topLevelCubes[2][0]] ;
+	let middleTmp = [middleLevelCubes[0][0], middleLevelCubes[1][0], middleLevelCubes[2][0]] ;
+	let bottomTmp = [bottomLevelCubes[0][0], bottomLevelCubes[1][0], bottomLevelCubes[2][0]] ;
+	let localMatrix = [topTmp,middleTmp, bottomTmp];	
+	console.log("Local Matrix:");
+	console.log(localMatrix);
+	for(var i = 0; i < 3; i++){		
+		topLevelCubes[i][0] = localMatrix[2-i][0]; 
+		middleLevelCubes[i][0] = localMatrix[2-i][1];		
+		bottomLevelCubes[i][0] = localMatrix[2-i][2];		
+	}	
+	console.log("Left CCW Rotation");
+	console.log(topLevelCubes);
+	console.log(middleLevelCubes);
+	console.log(bottomLevelCubes);
+	console.log("---------------------------");
+}
+
+function updateTopCCWRotation(){	
+	let row1 = [topLevelCubes[0][0], topLevelCubes[0][1], topLevelCubes[0][2]] ;
+	let row2 = [topLevelCubes[1][0], topLevelCubes[1][1], topLevelCubes[1][2]] ;
+	let row3 = [topLevelCubes[2][0], topLevelCubes[2][1], topLevelCubes[2][2]] ;
+	let localMatrix = [row1, row2, row3];
+	console.log("Local Matrix:");
+	console.log(localMatrix);
+	for(var i = 0; i < 3; i++){		
+		topLevelCubes[i][0] = localMatrix[0][2-i]+""; 	
+		topLevelCubes[i][1] = localMatrix[1][2-i]+""; 
+		topLevelCubes[i][2] = localMatrix[2][2-i]+""; 
+	}	
+	console.log("Top CCW Rotation");
+	console.log(topLevelCubes);
+	console.log(middleLevelCubes);
+	console.log(bottomLevelCubes);
+	console.log("---------------------------");
 }
 
 function updateTopCWRotation(){
@@ -276,16 +332,19 @@ function updateTopCWRotation(){
 	let row2 = [topLevelCubes[1][0], topLevelCubes[1][1], topLevelCubes[1][2]] ;
 	let row3 = [topLevelCubes[2][0], topLevelCubes[2][1], topLevelCubes[2][2]] ;
 
-
-	var localMatrix = [row1, row2, row3];
-	console.log(localMatrix);
-	
+	let localMatrix = [row1, row2, row3];
+	console.log("Local Matrix:");
+	console.log(localMatrix);	
 	for(var i = 0; i < 3; i++){		
-		topLevelCubes[i][0] = localMatrix[2][i]; 	
-		topLevelCubes[i][1] = localMatrix[1][i]; 
-		topLevelCubes[i][2] = localMatrix[0][i]; 
+		topLevelCubes[i][0] = localMatrix[2][i]+""; 	
+		topLevelCubes[i][1] = localMatrix[1][i]+""; 
+		topLevelCubes[i][2] = localMatrix[0][i]+""; 
 	}	
+	console.log("Top CW Rotation");
 	console.log(topLevelCubes);
+	console.log(middleLevelCubes);
+	console.log(bottomLevelCubes);
+	console.log("---------------------------");
 }
 
 function updateBottomCCWRotation(){
@@ -293,33 +352,114 @@ function updateBottomCCWRotation(){
 	let row1 = [bottomLevelCubes[0][0], bottomLevelCubes[0][1], bottomLevelCubes[0][2]] ;
 	let row2 = [bottomLevelCubes[1][0], bottomLevelCubes[1][1], bottomLevelCubes[1][2]] ;
 	let row3 = [bottomLevelCubes[2][0], bottomLevelCubes[2][1], bottomLevelCubes[2][2]] ;
-
-	var localMatrix = [row1, row2, row3];
+	let localMatrix = [row1, row2, row3];
+	console.log("Local Matrix:");
 	console.log(localMatrix);
 	for(var i = 0; i < 3; i++){
 		
-		bottomLevelCubes[i][0] = localMatrix[0][2-i]; 	
-		bottomLevelCubes[i][1] = localMatrix[1][2-i]; 
-		bottomLevelCubes[i][2] = localMatrix[2][2-i]; 
+		bottomLevelCubes[i][0] = localMatrix[0][2-i]+""; 	
+		bottomLevelCubes[i][1] = localMatrix[1][2-i]+""; 
+		bottomLevelCubes[i][2] = localMatrix[2][2-i]+""; 
 	}	
+	console.log("Bottom CCW Rotation");
+	console.log(topLevelCubes);
+	console.log(middleLevelCubes);
 	console.log(bottomLevelCubes);
+	console.log("---------------------------");
 }
 
 function updateBottomCWRotation(){
 	let row1 = [bottomLevelCubes[0][0], bottomLevelCubes[0][1], bottomLevelCubes[0][2]] ;
 	let row2 = [bottomLevelCubes[1][0], bottomLevelCubes[1][1], bottomLevelCubes[1][2]] ;
 	let row3 = [bottomLevelCubes[2][0], bottomLevelCubes[2][1], bottomLevelCubes[2][2]] ;
+	let localMatrix = [row1, row2, row3];
+	console.log("Local Matrix:");
+	console.log(localMatrix);	
+	for(var i = 0; i < 3; i++){		
+		bottomLevelCubes[i][0] = localMatrix[2][i]+""; 	
+		bottomLevelCubes[i][1] = localMatrix[1][i]+""; 
+		bottomLevelCubes[i][2] = localMatrix[0][i]+""; 
+	}	
+	console.log("Bottom CW Rotation");
+	console.log(topLevelCubes);
+	console.log(middleLevelCubes);
+	console.log(bottomLevelCubes);
+	console.log("---------------------------");
+}
 
-
-	var localMatrix = [row1, row2, row3];
+function updateFrontCWRotation(){
+	let topTmp = [topLevelCubes[2][0], topLevelCubes[2][1], topLevelCubes[2][2]] ;
+	let middleTmp = [middleLevelCubes[2][0], middleLevelCubes[2][1], middleLevelCubes[2][2]] ;
+	let bottomTmp = [bottomLevelCubes[2][0], bottomLevelCubes[2][1], bottomLevelCubes[2][2]] ;
+	let localMatrix = [topTmp,middleTmp, bottomTmp];	
+	console.log("Local Matrix:");
 	console.log(localMatrix);
 	
 	for(var i = 0; i < 3; i++){		
-		bottomLevelCubes[i][0] = localMatrix[2][i]; 	
-		bottomLevelCubes[i][1] = localMatrix[1][i]; 
-		bottomLevelCubes[i][2] = localMatrix[0][i]; 
+		topLevelCubes[2][i] = localMatrix[2-i][0]+""; 
+		middleLevelCubes[2][i] = localMatrix[2-i][1]+"";		
+		bottomLevelCubes[2][i] = localMatrix[2-i][2]+"";					
 	}	
+	console.log("Front CW Rotation");
+	console.log(topLevelCubes);
+	console.log(middleLevelCubes);
 	console.log(bottomLevelCubes);
+}
+
+function updateFrontCCWRotation(){
+	let topTmp = [topLevelCubes[2][0], topLevelCubes[2][1], topLevelCubes[2][2]] ;
+	let middleTmp = [middleLevelCubes[2][0], middleLevelCubes[2][1], middleLevelCubes[2][2]] ;
+	let bottomTmp = [bottomLevelCubes[2][0], bottomLevelCubes[2][1], bottomLevelCubes[2][2]] ;
+	let localMatrix = [topTmp,middleTmp, bottomTmp];	
+	console.log("Local Matrix:");
+	console.log(localMatrix);
+	for(var i = 0; i < 3; i++){		
+		
+		topLevelCubes[2][i] = localMatrix[i][2]+""; 
+		middleLevelCubes[2][i] = localMatrix[i][1]+"";		
+		bottomLevelCubes[2][i] = localMatrix[i][0]+"";	
+	}	
+	console.log("Front CCW Rotation");
+	console.log(topLevelCubes);
+	console.log(middleLevelCubes);
+	console.log(bottomLevelCubes);
+}
+
+function updateBackCWRotation(){
+	let topTmp = [topLevelCubes[0][0], topLevelCubes[0][1], topLevelCubes[0][2]] ;
+	let middleTmp = [middleLevelCubes[0][0], middleLevelCubes[0][1], middleLevelCubes[0][2]] ;
+	let bottomTmp = [bottomLevelCubes[0][0], bottomLevelCubes[0][1], bottomLevelCubes[0][2]] ;
+	let localMatrix = [topTmp,middleTmp, bottomTmp];
+
+	console.log("Local Matrix:");
+	console.log(localMatrix);	
+	for(var i = 0; i < 3; i++){				
+		topLevelCubes[0][i] = localMatrix[2-i][0]+""; 
+		middleLevelCubes[0][i] = localMatrix[2-i][1]+"";		
+		bottomLevelCubes[0][i] = localMatrix[2-i][2]+"";		
+	}	
+	console.log("Back CW Rotation");
+	console.log(topLevelCubes);
+	console.log(middleLevelCubes);
+	console.log(bottomLevelCubes);
+}
+
+function updateBackCCWRotation(){
+	let topTmp = [topLevelCubes[0][0], topLevelCubes[0][1], topLevelCubes[0][2]] ;
+	let middleTmp = [middleLevelCubes[0][0], middleLevelCubes[0][1], middleLevelCubes[0][2]] ;
+	let bottomTmp = [bottomLevelCubes[0][0], bottomLevelCubes[0][1], bottomLevelCubes[0][2]] ;
+	let localMatrix = [topTmp,middleTmp, bottomTmp];		
+	console.log("Local Matrix:");
+	console.log(localMatrix);
+	for(var i = 0; i < 3; i++){
+		topLevelCubes[0][i] = localMatrix[i][2]+""; 
+		middleLevelCubes[0][i] = localMatrix[i][1]+"";		
+		bottomLevelCubes[0][i] = localMatrix[i][0]+"";		
+	}
+	console.log("Back CCW Rotation");
+	console.log(topLevelCubes);
+	console.log(middleLevelCubes);
+	console.log(bottomLevelCubes);	
 }
 
 function mapValueToArrayIndex(val){
@@ -407,69 +547,155 @@ function mapValueToArrayIndex(val){
 }
 
 
-function displayRightCWRotation(){	
+function displayRightCCWRotation(){	
 	for(let i = 0; i < 3; i++){
-		cubeRy[mapValueToArrayIndex(topLevelCubes[i][2])] -= 90;
-		cubeRy[mapValueToArrayIndex(middleLevelCubes[i][2])]  -= 90;
-		cubeRy[mapValueToArrayIndex(bottomLevelCubes[i][2])] -= 90;
+		/*cubeRy[mapValueToArrayIndex(topLevelCubes[i][2])] += 90 ;
+		cubeRy[mapValueToArrayIndex(middleLevelCubes[i][2])]  += 90;
+		cubeRy[mapValueToArrayIndex(bottomLevelCubes[i][2])] += 90;*/
+		updateWorld(1, 0, 0, +90, mapValueToArrayIndex(topLevelCubes[i][2]));
+		updateWorld(1, 0, 0, +90, mapValueToArrayIndex(middleLevelCubes[i][2]));
+		updateWorld(1, 0, 0, +90, mapValueToArrayIndex(bottomLevelCubes[i][2]));
 	}
 }
 
-function displayRightCCWRotation(){	
+function displayRightCWRotation(){	
+	let total = 90;
 	for(let i = 0; i < 3; i++){
-		cubeRy[mapValueToArrayIndex(topLevelCubes[i][2])] += 90;
-		cubeRy[mapValueToArrayIndex(middleLevelCubes[i][2])]  += 90;
-		cubeRy[mapValueToArrayIndex(bottomLevelCubes[i][2])] += 90;
+
+		/*cubeRy[mapValueToArrayIndex(topLevelCubes[i][2])] = (cubeRy[mapValueToArrayIndex(topLevelCubes[i][2])] - 90) % 360;
+		cubeRy[mapValueToArrayIndex(middleLevelCubes[i][2])] = (cubeRy[mapValueToArrayIndex(middleLevelCubes[i][2])] - 90) % 360;
+		cubeRy[mapValueToArrayIndex(bottomLevelCubes[i][2])] = (cubeRy[mapValueToArrayIndex(bottomLevelCubes[i][2])] - 90) % 360;*/
+
+		updateWorld(1, 0, 0, -90, mapValueToArrayIndex(topLevelCubes[i][2]));
+		updateWorld(1, 0, 0, -90, mapValueToArrayIndex(middleLevelCubes[i][2]));
+		updateWorld(1, 0, 0, -90, mapValueToArrayIndex(bottomLevelCubes[i][2]));
+		
 	}
 }
 
 function displayLeftCCWRotation(){	
 	for(let i = 0; i < 3; i++){
-		cubeRy[mapValueToArrayIndex(topLevelCubes[i][0])] -= 90;
+		/*cubeRy[mapValueToArrayIndex(topLevelCubes[i][0])] -= 90;
 		cubeRy[mapValueToArrayIndex(middleLevelCubes[i][0])]  -= 90;
-		cubeRy[mapValueToArrayIndex(bottomLevelCubes[i][0])] -= 90;
+		cubeRy[mapValueToArrayIndex(bottomLevelCubes[i][0])] -= 90;*/
+
+		updateWorld(1, 0, 0, +90, mapValueToArrayIndex(topLevelCubes[i][0]));
+		updateWorld(1, 0, 0, +90, mapValueToArrayIndex(middleLevelCubes[i][0]));
+		updateWorld(1, 0, 0, +90, mapValueToArrayIndex(bottomLevelCubes[i][0]));
 	}
 }
 
 function displayLeftCWRotation(){	
+	
 	for(let i = 0; i < 3; i++){
-		cubeRy[mapValueToArrayIndex(topLevelCubes[i][0])] += 90;
+		/*cubeRy[mapValueToArrayIndex(topLevelCubes[i][0])] += 90;
 		cubeRy[mapValueToArrayIndex(middleLevelCubes[i][0])]  += 90;
-		cubeRy[mapValueToArrayIndex(bottomLevelCubes[i][0])] += 90;
+		cubeRy[mapValueToArrayIndex(bottomLevelCubes[i][0])] += 90;*/
+
+		updateWorld(1, 0, 0, -90, mapValueToArrayIndex(topLevelCubes[i][0]));
+		updateWorld(1, 0, 0, -90, mapValueToArrayIndex(middleLevelCubes[i][0]));
+		updateWorld(1, 0, 0, -90, mapValueToArrayIndex(bottomLevelCubes[i][0]));
 	}
 }
 
 function displayTopCCWRotation(){	
 	for(let i = 0; i < 3; i++){
-		cubeRx[mapValueToArrayIndex(topLevelCubes[i][0])] -= 90;
+		/*cubeRx[mapValueToArrayIndex(topLevelCubes[i][0])] -= 90;
 		cubeRx[mapValueToArrayIndex(topLevelCubes[i][1])] -= 90;
-		cubeRx[mapValueToArrayIndex(topLevelCubes[i][2])] -= 90;
+		cubeRx[mapValueToArrayIndex(topLevelCubes[i][2])] -= 90;*/
+
+		updateWorld(0, 1, 0, +90, mapValueToArrayIndex(topLevelCubes[i][0]));
+		updateWorld(0, 1, 0, +90, mapValueToArrayIndex(topLevelCubes[i][1]));
+		updateWorld(0, 1, 0, +90, mapValueToArrayIndex(topLevelCubes[i][2]));
 	}
 }
 
 function displayTopCWRotation(){	
 	for(let i = 0; i < 3; i++){
-		cubeRx[mapValueToArrayIndex(topLevelCubes[i][0])] += 90;
+		/*cubeRx[mapValueToArrayIndex(topLevelCubes[i][0])] += 90;
 		cubeRx[mapValueToArrayIndex(topLevelCubes[i][1])] += 90;
-		cubeRx[mapValueToArrayIndex(topLevelCubes[i][2])] += 90;
+		cubeRx[mapValueToArrayIndex(topLevelCubes[i][2])] += 90;*/
+
+		updateWorld(0, 1, 0, -90, mapValueToArrayIndex(topLevelCubes[i][0]));
+		updateWorld(0, 1, 0, -90, mapValueToArrayIndex(topLevelCubes[i][1]));
+		updateWorld(0, 1, 0, -90, mapValueToArrayIndex(topLevelCubes[i][2]));
 	}
 }
 
 function displayBottomCCWRotation(){	
 	for(let i = 0; i < 3; i++){
-		cubeRx[mapValueToArrayIndex(bottomLevelCubes[i][0])] -= 90;
+		/*cubeRx[mapValueToArrayIndex(bottomLevelCubes[i][0])] -= 90;
 		cubeRx[mapValueToArrayIndex(bottomLevelCubes[i][1])] -= 90;
-		cubeRx[mapValueToArrayIndex(bottomLevelCubes[i][2])] -= 90;
+		cubeRx[mapValueToArrayIndex(bottomLevelCubes[i][2])] -= 90;*/
+
+		updateWorld(0, 1, 0, +90, mapValueToArrayIndex(bottomLevelCubes[i][0]));
+		updateWorld(0, 1, 0, +90, mapValueToArrayIndex(bottomLevelCubes[i][1]));
+		updateWorld(0, 1, 0, +90, mapValueToArrayIndex(bottomLevelCubes[i][2]));
 	}
 }
 
 function displayBottomCWRotation(){	
 	for(let i = 0; i < 3; i++){
-		cubeRx[mapValueToArrayIndex(bottomLevelCubes[i][0])] += 90;
+		/*cubeRx[mapValueToArrayIndex(bottomLevelCubes[i][0])] += 90;
 		cubeRx[mapValueToArrayIndex(bottomLevelCubes[i][1])] += 90;
-		cubeRx[mapValueToArrayIndex(bottomLevelCubes[i][2])] += 90;
+		cubeRx[mapValueToArrayIndex(bottomLevelCubes[i][2])] += 90;*/
+
+		updateWorld(0, 1, 0, -90, mapValueToArrayIndex(bottomLevelCubes[i][0]));
+		updateWorld(0, 1, 0, -90, mapValueToArrayIndex(bottomLevelCubes[i][1]));
+		updateWorld(0, 1, 0, -90, mapValueToArrayIndex(bottomLevelCubes[i][2]));
 	}
 }
+
+function displayFrontCCWRotation(){	
+	for(let i = 0; i < 3; i++){
+		/*cubeRz[mapValueToArrayIndex(topLevelCubes[2][i])] -= 90;
+		cubeRz[mapValueToArrayIndex(middleLevelCubes[2][i])]  -= 90;
+		cubeRz[mapValueToArrayIndex(bottomLevelCubes[2][i])] -= 90;*/
+
+		updateWorld(0, 0, 1, +90, mapValueToArrayIndex(topLevelCubes[2][i]));
+		updateWorld(0, 0, 1, +90, mapValueToArrayIndex(middleLevelCubes[2][i]));
+		updateWorld(0, 0, 1, +90, mapValueToArrayIndex(bottomLevelCubes[2][i]));
+
+	}
+}
+
+function displayFrontCWRotation(){	
+	for(let i = 0; i < 3; i++){
+		/*cubeRz[mapValueToArrayIndex(topLevelCubes[2][i])] += 90;
+		cubeRz[mapValueToArrayIndex(middleLevelCubes[2][i])]  += 90;
+		cubeRz[mapValueToArrayIndex(bottomLevelCubes[2][i])] += 90;*/
+
+		updateWorld(0, 0, 1, -90, mapValueToArrayIndex(topLevelCubes[2][i]));
+		updateWorld(0, 0, 1, -90, mapValueToArrayIndex(middleLevelCubes[2][i]));
+		updateWorld(0, 0, 1, -90, mapValueToArrayIndex(bottomLevelCubes[2][i]));
+	}
+}
+
+
+function displayBackCCWRotation(){	
+	for(let i = 0; i < 3; i++){
+		/*cubeRz[mapValueToArrayIndex(topLevelCubes[0][i])] -= 90;
+		cubeRz[mapValueToArrayIndex(middleLevelCubes[0][i])]  -= 90;
+		cubeRz[mapValueToArrayIndex(bottomLevelCubes[0][i])] -= 90;*/
+
+		updateWorld(0, 0, 1, +90, mapValueToArrayIndex(topLevelCubes[0][i]));
+		updateWorld(0, 0, 1, +90, mapValueToArrayIndex(middleLevelCubes[0][i]));
+		updateWorld(0, 0, 1, +90, mapValueToArrayIndex(bottomLevelCubes[0][i]));
+	}
+}
+
+function displayBackCWRotation(){	
+	for(let i = 0; i < 3; i++){
+		/*cubeRz[mapValueToArrayIndex(topLevelCubes[0][i])] += 90;
+		cubeRz[mapValueToArrayIndex(middleLevelCubes[0][i])]  += 90;
+		cubeRz[mapValueToArrayIndex(bottomLevelCubes[0][i])] += 90;*/
+
+		updateWorld(0, 0, 1, -90, mapValueToArrayIndex(topLevelCubes[0][i]));
+		updateWorld(0, 0, 1, -90, mapValueToArrayIndex(middleLevelCubes[0][i]));
+		updateWorld(0, 0, 1, -90, mapValueToArrayIndex(bottomLevelCubes[0][i]));
+	}
+}
+
 
 function main(){
 
@@ -543,10 +769,8 @@ function main(){
 				gl.bindTexture(gl.TEXTURE_2D, texture);
 				gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
 				gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
-
 				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-
 				gl.generateMipmap(gl.TEXTURE_2D);
 			};
 		//_____________________________________________________________________________________
@@ -573,7 +797,8 @@ function main(){
 
 	async function loadModel(){
 		k = false;
-		for(var ind = 0; ind < obj_files.length; ind ++ ){
+		for(var ind = 0; ind <  obj_files.length; ind ++ ){
+		//for(var ind = 0; ind <  9; ind ++ ){
 			// Load mesh using the webgl-obj-loader library
 			objStr = await utils.get_objstr("lib/models/" + obj_files[ind] + ".obj");
 			
@@ -626,12 +851,14 @@ function main(){
 			cubeRy.push(0.0);
 			cubeRz.push(0.0);
 			cubeS.push(0.5);
+			locQuaternions.push(new Quaternion());
 		}
-
+		console.log(locQuaternions);
 	}
 
 	function drawScene() {
 		// update WV matrix
+		
 		cz = lookRadius * Math.cos(utils.degToRad(-angle)) * Math.cos(utils.degToRad(-elevation));
 		cx = lookRadius * Math.sin(utils.degToRad(-angle)) * Math.cos(utils.degToRad(-elevation));
 		cy = lookRadius * Math.sin(utils.degToRad(-elevation));
@@ -649,9 +876,11 @@ function main(){
 		gl.uniform1i(textLocation,0);
 
 		var viewMatrix = utils.MakeView(cx, cy, cz, elevation, angle);
-
+		
 		for(var ind = 0; ind < vao.length; ind++){
-			worldMatrix = utils.MakeWorld(cubeTx[ind], cubeTy[ind], cubeTz[ind],cubeRx[ind], cubeRy[ind], cubeRz[ind],cubeS[ind]);
+			//worldMatrix = utils.MakeWorld(cubeTx[ind], cubeTy[ind], cubeTz[ind],cubeRx[ind], cubeRy[ind], cubeRz[ind],cubeS[ind]);
+			
+			worldMatrix = utils.multiplyMatrices(locQuaternions[ind].toMatrix4(false), utils.MakeScaleMatrix(cubeS[ind]));
 			gl.bindVertexArray(vao[ind]);
 			//var perspectiveMatrix = utils.MakePerspective(90, gl.canvas.width/gl.canvas.height, 0.1, 100.0);
 
@@ -659,7 +888,6 @@ function main(){
 			var projectionMatrix = utils.multiplyMatrices(perspectiveMatrix, projectionMatrix);
 
 			gl.uniformMatrix4fv(matrixLocation, gl.FALSE, utils.transposeMatrix(projectionMatrix));
-
 
 			var viewWorldMatrix = utils.multiplyMatrices(viewMatrix, cubeWorldMatrix);
 			//var projectionMatrix = utils.multiplyMatrices(perspectiveMatrix, viewWorldMatrix);
@@ -675,12 +903,34 @@ function main(){
 			gl.uniform3fv(lightColorHandle,  lightColor);
 			gl.uniform1f(lightTargetLocation,  lightTarget);
 			gl.uniform1f(lightDecayLocation,  lightDecay);
-
-
 			gl.drawElements(gl.TRIANGLES, modelIndices[ind].length, gl.UNSIGNED_SHORT, 0 );
 		}
 	    window.requestAnimationFrame(drawScene);
 	}
+}
 
+function updateWorld(rvx, rvy, rvz, deltaDeg, index) {	
+	var deltaRad = utils.degToRad(deltaDeg);
+	var deltaQuaternion = new Quaternion(Math.cos(deltaRad/2), Math.sin(deltaRad/2)*rvx, Math.sin(deltaRad/2)*rvy, Math.sin(deltaRad/2)*rvz);
+	inv = new Quaternion();
+	appl = new Quaternion();
+	if(true){
+	//if(index < 9){
+		/*
+		console.log("Delta quaternion: " + deltaQuaternion);
+		inv =  deltaQuaternion.conjugate();
+		console.log("inverse:" + inv);
+		appl = deltaQuaternion.mul(locQuaternions[index]);
+		console.log("appl:" + appl);
+		locQuaternions[index] = appl.mul(inv);	
+		console.log("Transformed quat: " + locQuaternions[index]); 
+		//locQuaternions[index] = locQuaternions[index].mul(deltaQuaternion);
+
+		//locQuaternions[index] = (locQuaternions[index].inverse().mul(deltaQuaternion)).mul(locQuaternions[index]);*/
+
+		locQuaternions[index] = deltaQuaternion.mul(locQuaternions[index]);
+	}
+	//var out = locQuaternions.toMatrix4(false);	
+	//return out;
 
 }
