@@ -1,0 +1,477 @@
+<html>
+<head>
+  <title>Rubik's Cube</title>
+  <script src="lib/webgl-obj-loader.min.js"></script>
+  <script src="lib/utils.js"></script>
+  <script src="lib/quaternion.min.js"></script>
+  <script src="lib/twgl-full.min.js"></script>
+  <script src="lib/app.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/keyboard-css@1.2.4/dist/css/main.min.css" />
+  <style>
+    @import url(https://fonts.googleapis.com/css?family=Shadows+Into+Light);
+    body {
+      background:orange;
+
+    }
+
+
+    #allthethings {
+      position:relative;
+      margin:auto;
+      top:5px;
+      left:2px;
+    }
+
+    #single {
+
+      position:relative;
+      height:10%;
+      width:100%;
+      background:#006680;
+      text-align:center;
+      font-size:30px;
+     background-size: 1px 300%;
+     -webkit-transition:0.5s;
+      transition:0.5s;
+      color:orange;
+      font-family:shadows into light;
+
+      cursor:pointer;
+
+
+
+    }
+
+    #single:hover {
+      background:#7A0000;
+      color:white;
+    -webkit-transform:rotate(-1deg);
+      transform:rotate(-2deg);
+
+
+    }
+
+
+    #single p {
+      position:relative;
+      top:2px;
+      right:4px;
+    }
+
+
+    #credits p {
+      position:relative;
+      top:0px;
+
+    }
+    #test {
+
+
+    animation: fadein 2s;
+    -moz-animation: fadein 2s; /* Firefox */
+    -webkit-animation: fadein 2s; /* Safari and Chrome */
+    -o-animation: fadein 2s; /* Opera */
+    }
+    @keyframes fadein {
+    from {
+      opacity:0;
+    }
+    to {
+      opacity:1;
+    }
+    }
+    @-moz-keyframes fadein { /* Firefox */
+    from {
+      opacity:0;
+    }
+    to {
+      opacity:1;
+    }
+    }
+    @-webkit-keyframes fadein { /* Safari and Chrome */
+    from {
+      opacity:0;
+    }
+    to {
+      opacity:1;
+    }
+    }
+    @-o-keyframes fadein { /* Opera */
+    from {
+      opacity:0;
+    }
+    to {
+      opacity: 1;
+    }
+    }
+
+
+    * {
+      box-sizing: border-box;
+    }
+
+    /* Create three unequal columns that floats next to each other */
+    .column {
+      float: left;
+      padding: 10px;
+    }
+
+    .left, .right {
+      width: 25%;
+      height: 100%;
+    }
+
+    .middle {
+      width: 50%;
+height: 100%;
+      border-right-style: solid;
+      border-left-style: solid;
+    }
+
+    /* Clear floats after the columns */
+    .row:after {
+      content: "";
+      display: table;
+      clear: both;
+    }
+    /*--------------------------------------CSS TIMER-----------------------------------------*/
+    .base-timer {
+      position: relative;
+      width: 300px;
+      height: 300px;
+    }
+
+    .base-timer__svg {
+      transform: scaleX(-1);
+    }
+
+    .base-timer__circle {
+      fill: none;
+      stroke: none;
+    }
+
+    .base-timer__path-elapsed {
+      stroke-width: 7px;
+      stroke: grey;
+    }
+
+    .base-timer__path-remaining {
+      stroke-width: 7px;
+      stroke-linecap: round;
+      transform: rotate(90deg);
+      transform-origin: center;
+      transition: 1s linear all;
+      fill-rule: nonzero;
+      stroke: currentColor;
+    }
+
+    .base-timer__path-remaining.green {
+      color: rgb(65, 184, 131);
+    }
+
+    .base-timer__path-remaining.orange {
+      color: orange;
+    }
+
+    .base-timer__path-remaining.red {
+      color: red;
+    }
+
+    .base-timer__label {
+      position: absolute;
+      width: 300px;
+      height: 300px;
+      top: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      font-family:shadows into light;
+    }
+</style>
+
+
+<script>
+  if (document.location.search.match(/type=embed/gi)) {
+    window.parent.postMessage("resize", "*");
+  }
+</script>
+</head>
+<body id = "test" translate="no" onLoad="load_from_menu();">
+  <div class="row">
+    <div class="column left">
+      <table >
+<tr><td>
+  <img src="Rubiks_Title.jpg" alt="Rubik Cube" style="width:100%;"  border="5">
+</td></tr>
+  <tr><td>
+    <div style = "border-style: solid; display: flex;">
+
+
+    <table style = "display: flex; width:100%; vertical-align: middle; font-family:shadows into light;">
+
+
+                <th><span class="text">Key</span></th>
+
+
+
+          <tr><td><button class="kbc-button kbc-button-sm">T</button></td><td style="text-align: center; vertical-align: middle;">Rotate the top facade clockwise</td></tr>
+          <tr><td><button class="kbc-button kbc-button-sm">D</button></td><td style="text-align: center; vertical-align: middle;">Rotate the bottom facade clockwise</td></tr>
+          <tr><td><button class="kbc-button kbc-button-sm">R</button></td><td style="text-align: center; vertical-align: middle;">Rotate the right facade clockwise</td></tr>
+          <tr><td><button class="kbc-button kbc-button-sm">L</button></td><td style="text-align: center; vertical-align: middle;">Rotate the left facade clockwise</td></tr>
+          <tr><td><button class="kbc-button kbc-button-sm">F</button></td><td style="text-align: center; vertical-align: middle;">Rotate the front facade clockwise</td></tr>
+          <tr><td><button class="kbc-button kbc-button-sm">B</button></td><td style="text-align: center; vertical-align: middle;">Rotate the back  facade clockwise</td></tr>
+          <tr><td style="text-align: center; vertical-align: middle;" colspan = 2>In order to rotate the facade counteclockwise:</td></tr>
+          <tr><td style="text-align: center; vertical-align: middle;"colspan = 2>Press <button class="kbc-button kbc-button-sm">Shift</butto  n> + <button class="kbc-button kbc-button-sm">Key</button></td></tr>
+
+    </table>
+
+
+  </div>
+  </td></tr>
+      </table>
+    </div>
+    <div class="column middle">
+        <canvas id="my-canvas" style = "width:100%; height:90%;">
+          Your browser doesn't support the Canvas Element!
+        </canvas>
+
+  </div>
+    <div class="column right">
+      <div id="allthethings">
+        <center>
+      <div id="app"></div>
+      <div id="single" onclick="scramble();"><p>SCRAMBLE</p></div>
+      <div id="single"><a onclick = "reset_cube();" style="text-decoration:none; color:orange;"><p>RESET</p></a></div>
+      <div id="single" onclick="go_to_menu();"><p>MENU</p></div>
+      <p id = "saving_cube" style = "display:none;"> </p>
+        </center>
+  </div>
+    </div>
+  </div>
+
+
+
+</body>
+<script>
+function reset_cube(){
+  var url_string = window.location.href;
+  var url = new URL(url_string);
+  window.location.href = "canvas.html?" + "rotation_speed=" + url.searchParams.get("rotation_speed") + "&emission_intensity="+ url.searchParams.get("emission_intensity")+ "&ambient="+ url.searchParams.get("ambient");
+}
+function hexToRgb(hex) {
+  var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result ? {
+    r: parseInt(result[1], 16),
+    g: parseInt(result[2], 16),
+    b: parseInt(result[3], 16)
+  } : null;
+}
+ function load_from_menu(){
+
+    // var SearchString = window.location.search.substring(1);
+    var url_string = window.location.href;
+    var url = new URL(url_string);
+    var c = url.searchParams.get("user_saving");
+    var received_json = '';
+     if(c != null){
+       received_json = JSON.parse(url.searchParams.get("user_saving"));
+     }
+    // var ambient = hexToRgb(url.searchParams.get("ambient"));
+     var ambient = (JSON.parse(url.searchParams.get("ambient")));
+     main(received_json,url.searchParams.get("rotation_speed"),url.searchParams.get("emission_intensity"),[ambient.r,ambient.g,ambient.b]);
+ }
+</script>
+<!--Menu Script-->
+<script>
+function go_to_menu(){
+      save_cube();
+      var url_string = window.location.href;
+      var url = new URL(url_string);
+      window.location.href="index.html?user_saving=" + document.getElementById('saving_cube').innerHTML + "&rotation_speed=" + url.searchParams.get("rotation_speed") + "&emission_intensity="+ url.searchParams.get("emission_intensity")+ "&ambient="+ url.searchParams.get("ambient");
+}
+</script>
+<!--Timer scripts-->
+<script>
+
+  const FULL_DASH_ARRAY = 283;
+  const WARNING_THRESHOLD = 10;
+  const ALERT_THRESHOLD = 5;
+
+  const COLOR_CODES = {
+    info: {
+      color: "green"
+    },
+    warning: {
+      color: "orange",
+      threshold: WARNING_THRESHOLD
+    },
+    alert: {
+      color: "red",
+      threshold: ALERT_THRESHOLD
+    }
+  };
+
+  const TIME_LIMIT = 20;
+  let timePassed = 0;
+  let timeLeft = TIME_LIMIT;
+  let timerInterval = null;
+  let remainingPathColor = COLOR_CODES.info.color;
+
+  document.getElementById("app").innerHTML = `
+  <div class="base-timer">
+    <svg class="base-timer__svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <g class="base-timer__circle">
+        <circle class="base-timer__path-elapsed" cx="50" cy="50" r="45"></circle>
+        <path
+          id="base-timer-path-remaining"
+          stroke-dasharray="283"
+          class="base-timer__path-remaining ${remainingPathColor}"
+          d="
+            M 50, 50
+            m -45, 0
+            a 45,45 0 1,0 90,0
+            a 45,45 0 1,0 -90,0
+          "
+        ></path>
+      </g>
+    </svg>
+    <span id="base-timer-label" class="base-timer__label">${formatTime(
+      timeLeft
+    )}</span>
+  </div>
+  `;
+
+  startTimer();
+
+  function onTimesUp() {
+    clearInterval(timerInterval);
+  }
+
+  function startTimer() {
+    timerInterval = setInterval(() => {
+      timePassed = timePassed += 1;
+      timeLeft = TIME_LIMIT - timePassed;
+      document.getElementById("base-timer-label").innerHTML = formatTime(
+        timeLeft
+      );
+      setCircleDasharray();
+      setRemainingPathColor(timeLeft);
+
+      if (timeLeft === 0) {
+        onTimesUp();
+      }
+    }, 1000);
+  }
+
+  function formatTime(time) {
+    const minutes = Math.floor(time / 60);
+    let seconds = time % 60;
+
+    if (seconds < 10) {
+      seconds = `0${seconds}`;
+    }
+
+    return `${minutes}:${seconds}`;
+  }
+
+  function setRemainingPathColor(timeLeft) {
+    const { alert, warning, info } = COLOR_CODES;
+    if (timeLeft <= alert.threshold) {
+      document
+        .getElementById("base-timer-path-remaining")
+        .classList.remove(warning.color);
+      document
+        .getElementById("base-timer-path-remaining")
+        .classList.add(alert.color);
+    } else if (timeLeft <= warning.threshold) {
+      document
+        .getElementById("base-timer-path-remaining")
+        .classList.remove(info.color);
+      document
+        .getElementById("base-timer-path-remaining")
+        .classList.add(warning.color);
+    }
+  }
+
+  function calculateTimeFraction() {
+    const rawTimeFraction = timeLeft / TIME_LIMIT;
+    return rawTimeFraction - (1 / TIME_LIMIT) * (1 - rawTimeFraction);
+  }
+
+  function setCircleDasharray() {
+    const circleDasharray = `${(
+      calculateTimeFraction() * FULL_DASH_ARRAY
+    ).toFixed(0)} 283`;
+    document
+      .getElementById("base-timer-path-remaining")
+      .setAttribute("stroke-dasharray", circleDasharray);
+  }
+</script>
+
+<script id="vs" type="notjs">
+  #version 300 es
+  in vec4 a_position;
+  in vec3 a_normal;
+  in vec2 a_texcoord;
+
+  uniform mat4 u_worldInverseTranspose;
+  uniform mat4 u_worldViewProjection;
+  uniform mat4 u_worldMatrix;
+
+  out highp vec2 vTextureCoord;
+  out highp vec3 fsPosition;
+  out highp vec3 transformedNormal;
+
+  void main(void) {
+    gl_Position = u_worldViewProjection* a_position;
+    fsPosition = (u_worldMatrix * a_position).xyz;
+    transformedNormal = (u_worldMatrix* vec4(a_normal, 1.0)).xyz;
+    vTextureCoord = a_texcoord;
+ }
+</script>
+
+<script id="fs" type="notjs">
+  #version 300 es
+  precision highp float;
+  in highp vec2 vTextureCoord;
+  in highp vec3 vLighting;
+  in highp vec3 fsPosition;
+  in highp vec3 transformedNormal;
+  uniform sampler2D u_diffuse;
+  //uniform vec3 eyePos;
+  uniform mat4 u_worldInverseTranspose;
+  uniform highp vec3 cam_pos;
+  uniform highp vec3 ambient_color;
+  out vec4 outColor;
+
+  vec4 compDiffuse(vec3 lightDir, vec4 lightCol, vec3 normalVec, vec4 diffColor) {
+    // Diffuse
+    // --> Lambert
+    vec4 diffuseLambert = lightCol * clamp(dot(normalVec, lightDir),0.0,1.0) * diffColor;
+    // ----> Select final component
+    return diffuseLambert;
+  }
+
+  void main(void) {
+    highp vec4 texelColor = texture(u_diffuse , vTextureCoord);
+    //highp vec4 texelColor = vec4(0.0,0.0,1.0,1);
+    //vec3 nEyeDirection = normalize(eyePos - fsPosition);
+    // Apply lighting effect
+
+    //highp vec4 ambientLight = 1.0*vec4(1, 1, 1, 1);
+    highp vec4 ambientLight = vec4(ambient_color, 1);
+    //highp vec3 Pos = vec3(3.0, 3.0, 3.0);
+    highp vec3 Pos = vec3(cam_pos.x+3.0, cam_pos.y, cam_pos.z);
+    highp vec4 pointLightColor = vec4(2.0, 2.0, 2.0, 1.0);
+    vec3 OlightDir = normalize(Pos - fsPosition);
+
+    vec4 diffuse = compDiffuse(OlightDir, pointLightColor, transformedNormal, texelColor);//(vec3 lightDir, vec4 lightCol, vec3 normalVec, vec4 diffColor)
+    highp vec4 vLighting = clamp(ambientLight*texelColor + diffuse, 0.0, 1.0);
+    //highp vec4 vLighting = clamp(diffuse, 0.0, 1.0);
+    //highp vec4 vLighting = clamp(ambientLight*texelColor, 0.0, 1.0);
+    outColor = vec4(vLighting.rgb, texelColor.a);
+  }
+</script>
+
+</html>
