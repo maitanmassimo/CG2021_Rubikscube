@@ -37,7 +37,7 @@ var changes = {
 	rvx:0,
 	rvy:1,
 	rvz:0,
-	angle: 0,
+	angle: 0.0,
 	element: new Array(),
 };
 
@@ -248,6 +248,7 @@ function doMouseUp(event) {
 }
 
 function doMouseMove(event) {
+
 	if(mouseState) {
 		var dx = event.pageX - lastMouseX;
 		var dy = lastMouseY - event.pageY;
@@ -263,7 +264,9 @@ function doMouseMove(event) {
 			}
 		}
 		uniform_keyboard();
-	}
+
+}
+
 //	drawScene();
 }
 function doMouseWheel(event) {
@@ -634,7 +637,21 @@ async function main(saving,rotation_speed_from_user,emission_intensity_from_user
 		"Cube22","Cube22_B","Cube22_M"
 	];
 	const texture_url = "lib/models/Rubiks Cube.png";
-	rotation_speed = rotation_speed_from_user;
+	rotation_speed = parseInt(rotation_speed_from_user);
+	function rotation_speed_normalize(){
+		switch (rotation_speed) {
+			case 1: rotation_speed = 0.1;	break;
+			case 2: rotation_speed = 0.2;	break;
+			case 3: rotation_speed = 0.5;	break;
+			case 4: rotation_speed = 1;	break;
+			case 5: rotation_speed = 2;	break;
+			case 6: rotation_speed = 5;	break;
+			case 7: rotation_speed = 10;	break;
+
+
+		}
+	}
+	rotation_speed_normalize();
 	emission_intensity = emission_intensity_from_user;
 	ambient_color = ambient_color_from_user;
 
@@ -732,16 +749,18 @@ async function main(saving,rotation_speed_from_user,emission_intensity_from_user
 	function render() {
 
 		if(changes.angle != 0){
-				for(let i = 0; i < changes.element.length;i++){
-					if(changes.angle > 0){
-					updateWorld(changes.rvx, changes.rvy, changes.rvz, 9, changes.element[i] );
-					changes.angle -=1;
-					}else{
-						updateWorld(changes.rvx, changes.rvy, changes.rvz, -9, changes.element[i] );
-						changes.angle +=1;
-					}
-				}
-			}
+		                for(let i = 0; i < changes.element.length;i++){
+		                    if(changes.angle > 0){
+		                    updateWorld(changes.rvx, changes.rvy, changes.rvz, 9 * rotation_speed, changes.element[i] );
+		                    changes.angle = parseFloat((changes.angle - rotation_speed).toFixed(2));
+
+		                }else if(changes.angle < 0){
+		                        updateWorld(changes.rvx, changes.rvy, changes.rvz, -9 * rotation_speed, changes.element[i] );
+		                        changes.angle = parseFloat((changes.angle + rotation_speed).toFixed(2));
+
+		                    }
+		                }
+		            }
 
 			if(changes.angle === 0 && move_queue.length != 0){
 				scrambling = true;
@@ -750,6 +769,7 @@ async function main(saving,rotation_speed_from_user,emission_intensity_from_user
 				display_moves[rand](-90);
 				if(move_queue.length === 0){
 					scrambling = false;
+					uniform_keyboard();
 				}
 			}
 
@@ -806,16 +826,18 @@ function scramble(){
 }
 
 function save_cube(){
-	back_to_init(0.0);
-	elevation_angle_restart(0.0);
-	saving_cube.top = topLevelCubes;
-	saving_cube.middle = middleLevelCubes;
-	saving_cube.bottom = bottomLevelCubes;
-	saving_cube.quaternion = new Array();
-	rubik_cubes.forEach((item, i) => {
-		saving_cube.quaternion.push(item.quaternion);
-	});
-	console.log(saving_cube);
-	document.getElementById('saving_cube').innerHTML = JSON.stringify(saving_cube);
-
+	if(changes.angle === 0.0){
+		back_to_init(0.0);
+		elevation_angle_restart(0.0);
+		saving_cube.top = topLevelCubes;
+		saving_cube.middle = middleLevelCubes;
+		saving_cube.bottom = bottomLevelCubes;
+		saving_cube.quaternion = new Array();
+		rubik_cubes.forEach((item, i) => {
+			saving_cube.quaternion.push(item.quaternion);
+		});
+		document.getElementById('saving_cube').innerHTML = JSON.stringify(saving_cube);
+		return true;
+	}
+	return false;
 }
