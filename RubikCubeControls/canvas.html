@@ -134,59 +134,7 @@ height: 100%;
       display: table;
       clear: both;
     }
-    /*--------------------------------------CSS TIMER-----------------------------------------*/
-    .base-timer {
-      position: relative;
-      width: 300px;
-      height: 300px;
-    }
 
-    .base-timer__svg {
-      transform: scaleX(-1);
-    }
-
-    .base-timer__circle {
-      fill: none;
-      stroke: none;
-    }
-
-    .base-timer__path-elapsed {
-      stroke-width: 7px;
-      stroke: grey;
-    }
-
-    .base-timer__path-remaining {
-      stroke-width: 7px;
-      stroke-linecap: round;
-      transform: rotate(90deg);
-      transform-origin: center;
-      transition: 1s linear all;
-      fill-rule: nonzero;
-      stroke: currentColor;
-    }
-
-    .base-timer__path-remaining.green {
-      color: rgb(65, 184, 131);
-    }
-
-    .base-timer__path-remaining.orange {
-      color: orange;
-    }
-
-    .base-timer__path-remaining.red {
-      color: red;
-    }
-
-    .base-timer__label {
-      position: absolute;
-      width: 300px;
-      height: 300px;
-      top: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 48px;
-      font-family:shadows into light;
     }
 </style>
 
@@ -240,7 +188,7 @@ height: 100%;
     <div class="column right">
       <div id="allthethings">
         <center>
-      <div id="app"></div>
+      <span id="h"></span>:<span id="m"></span>:<span id="s"></span>
       <div id="single" onclick="scramble();"><p>SCRAMBLE</p></div>
       <div id="single"><a onclick = "reset_cube();" style="text-decoration:none; color:orange;"><p>RESET</p></a></div>
       <div id="single" onclick="go_to_menu();"><p>MENU</p></div>
@@ -254,6 +202,16 @@ height: 100%;
 
 </body>
 <script>
+  d = new Date();
+  d.setHours(0);
+  d.setMinutes(0);
+  d.setSeconds(0, 0);
+  setInterval(function () {
+    document.getElementById("h").innerHTML = d.getHours();
+    document.getElementById("m").innerHTML = d.getMinutes();
+    document.getElementById("s").innerHTML = d.getSeconds();
+    d.setTime(d.getTime() + 1000);
+  }, 1000);
 function reset_cube(){
   var url_string = window.location.href;
   var url = new URL(url_string);
@@ -285,129 +243,15 @@ function hexToRgb(hex) {
 <!--Menu Script-->
 <script>
 function go_to_menu(){
-      save_cube();
-      var url_string = window.location.href;
-      var url = new URL(url_string);
-      window.location.href="index.html?user_saving=" + document.getElementById('saving_cube').innerHTML + "&rotation_speed=" + url.searchParams.get("rotation_speed") + "&emission_intensity="+ url.searchParams.get("emission_intensity")+ "&ambient="+ url.searchParams.get("ambient");
+      var can_i_exit = save_cube();
+      if(can_i_exit){
+            var url_string = window.location.href;
+            var url = new URL(url_string);
+            window.location.href="index.html?user_saving=" + document.getElementById('saving_cube').innerHTML + "&rotation_speed=" + url.searchParams.get("rotation_speed") + "&emission_intensity="+ url.searchParams.get("emission_intensity")+ "&ambient="+ url.searchParams.get("ambient");
+      }
 }
 </script>
-<!--Timer scripts-->
-<script>
 
-  const FULL_DASH_ARRAY = 283;
-  const WARNING_THRESHOLD = 10;
-  const ALERT_THRESHOLD = 5;
-
-  const COLOR_CODES = {
-    info: {
-      color: "green"
-    },
-    warning: {
-      color: "orange",
-      threshold: WARNING_THRESHOLD
-    },
-    alert: {
-      color: "red",
-      threshold: ALERT_THRESHOLD
-    }
-  };
-
-  const TIME_LIMIT = 20;
-  let timePassed = 0;
-  let timeLeft = TIME_LIMIT;
-  let timerInterval = null;
-  let remainingPathColor = COLOR_CODES.info.color;
-
-  document.getElementById("app").innerHTML = `
-  <div class="base-timer">
-    <svg class="base-timer__svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-      <g class="base-timer__circle">
-        <circle class="base-timer__path-elapsed" cx="50" cy="50" r="45"></circle>
-        <path
-          id="base-timer-path-remaining"
-          stroke-dasharray="283"
-          class="base-timer__path-remaining ${remainingPathColor}"
-          d="
-            M 50, 50
-            m -45, 0
-            a 45,45 0 1,0 90,0
-            a 45,45 0 1,0 -90,0
-          "
-        ></path>
-      </g>
-    </svg>
-    <span id="base-timer-label" class="base-timer__label">${formatTime(
-      timeLeft
-    )}</span>
-  </div>
-  `;
-
-  startTimer();
-
-  function onTimesUp() {
-    clearInterval(timerInterval);
-  }
-
-  function startTimer() {
-    timerInterval = setInterval(() => {
-      timePassed = timePassed += 1;
-      timeLeft = TIME_LIMIT - timePassed;
-      document.getElementById("base-timer-label").innerHTML = formatTime(
-        timeLeft
-      );
-      setCircleDasharray();
-      setRemainingPathColor(timeLeft);
-
-      if (timeLeft === 0) {
-        onTimesUp();
-      }
-    }, 1000);
-  }
-
-  function formatTime(time) {
-    const minutes = Math.floor(time / 60);
-    let seconds = time % 60;
-
-    if (seconds < 10) {
-      seconds = `0${seconds}`;
-    }
-
-    return `${minutes}:${seconds}`;
-  }
-
-  function setRemainingPathColor(timeLeft) {
-    const { alert, warning, info } = COLOR_CODES;
-    if (timeLeft <= alert.threshold) {
-      document
-        .getElementById("base-timer-path-remaining")
-        .classList.remove(warning.color);
-      document
-        .getElementById("base-timer-path-remaining")
-        .classList.add(alert.color);
-    } else if (timeLeft <= warning.threshold) {
-      document
-        .getElementById("base-timer-path-remaining")
-        .classList.remove(info.color);
-      document
-        .getElementById("base-timer-path-remaining")
-        .classList.add(warning.color);
-    }
-  }
-
-  function calculateTimeFraction() {
-    const rawTimeFraction = timeLeft / TIME_LIMIT;
-    return rawTimeFraction - (1 / TIME_LIMIT) * (1 - rawTimeFraction);
-  }
-
-  function setCircleDasharray() {
-    const circleDasharray = `${(
-      calculateTimeFraction() * FULL_DASH_ARRAY
-    ).toFixed(0)} 283`;
-    document
-      .getElementById("base-timer-path-remaining")
-      .setAttribute("stroke-dasharray", circleDasharray);
-  }
-</script>
 
 <script id="vs" type="notjs">
   #version 300 es
@@ -426,7 +270,7 @@ function go_to_menu(){
   void main(void) {
     gl_Position = u_worldViewProjection* a_position;
     fsPosition = (u_worldMatrix * a_position).xyz;
-    transformedNormal = (u_worldMatrix* vec4(a_normal, 1.0)).xyz;
+    transformedNormal =  normalize((u_worldMatrix* vec4(a_normal, 1.0)).xyz);
     vTextureCoord = a_texcoord;
  }
 </script>
@@ -439,7 +283,6 @@ function go_to_menu(){
   in highp vec3 fsPosition;
   in highp vec3 transformedNormal;
   uniform sampler2D u_diffuse;
-  //uniform vec3 eyePos;
   uniform mat4 u_worldInverseTranspose;
   uniform highp vec3 cam_pos;
   uniform highp vec3 ambient_color;
@@ -453,23 +296,25 @@ function go_to_menu(){
     return diffuseLambert;
   }
 
+  vec4 compPhongSpecular(vec3 lightDir, vec3 normalVec, vec3 eyedirVec, float SpecShine, vec4 lightColor, vec4 specularColor){
+    //phong specular
+
+    vec4 spec = lightColor * specularColor * max(sign(max(0.0, dot(normalVec, lightDir))),0.0)* pow(max(dot(-reflect(lightDir, normalVec), eyedirVec), 0.0), SpecShine);
+
+    return spec;
+  }
+
   void main(void) {
     highp vec4 texelColor = texture(u_diffuse , vTextureCoord);
-    //highp vec4 texelColor = vec4(0.0,0.0,1.0,1);
-    //vec3 nEyeDirection = normalize(eyePos - fsPosition);
-    // Apply lighting effect
-
-    //highp vec4 ambientLight = 1.0*vec4(1, 1, 1, 1);
     highp vec4 ambientLight = vec4(ambient_color, 1);
-    //highp vec3 Pos = vec3(3.0, 3.0, 3.0);
-    highp vec3 Pos = vec3(cam_pos.x+3.0, cam_pos.y, cam_pos.z);
+    highp vec3 Pos = vec3(cam_pos.x+0.0, cam_pos.y+5.0, cam_pos.z+0.0);
     highp vec4 pointLightColor = vec4(2.0, 2.0, 2.0, 1.0);
     vec3 OlightDir = normalize(Pos - fsPosition);
+    vec3 eyeDir = normalize(cam_pos - fsPosition);
 
     vec4 diffuse = compDiffuse(OlightDir, pointLightColor, transformedNormal, texelColor);//(vec3 lightDir, vec4 lightCol, vec3 normalVec, vec4 diffColor)
-    highp vec4 vLighting = clamp(ambientLight*texelColor + diffuse, 0.0, 1.0);
-    //highp vec4 vLighting = clamp(diffuse, 0.0, 1.0);
-    //highp vec4 vLighting = clamp(ambientLight*texelColor, 0.0, 1.0);
+    vec4 spec = compPhongSpecular(OlightDir, transformedNormal, eyeDir, 200.0, pointLightColor, vec4(1.0, 1.0, 1.0, 1.0));
+    highp vec4 vLighting = clamp(ambientLight*texelColor + diffuse + spec, 0.0, 1.0);
     outColor = vec4(vLighting.rgb, texelColor.a);
   }
 </script>
