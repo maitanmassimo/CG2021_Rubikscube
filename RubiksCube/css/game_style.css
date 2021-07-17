@@ -1,0 +1,182 @@
+
+  @import url(https://fonts.googleapis.com/css?family=Shadows+Into+Light);
+  body {
+    background:orange;
+
+  }
+
+
+  #allthethings {
+    position:relative;
+    margin:auto;
+    top:5px;
+    left:2px;
+  }
+
+  #single {
+    border-radius: 10px;
+    position:relative;
+    height:10%;
+    width:100%;
+    background:#006680;
+    text-align:center;
+    font-size:30px;
+   background-size: 1px 300%;
+   -webkit-transition:0.5s;
+    transition:0.5s;
+    color:orange;
+    font-family:shadows into light;
+
+    cursor:pointer;
+
+
+
+  }
+
+  #single:hover {
+    background:#7A0000;
+    color:white;
+  -webkit-transform:rotate(-1deg);
+    transform:rotate(-2deg);
+
+
+  }
+
+
+  #single p {
+    position:relative;
+    top:2px;
+    right:4px;
+  }
+
+
+  #credits p {
+    position:relative;
+    top:0px;
+
+  }
+  #test {
+
+
+  animation: fadein 2s;
+  -moz-animation: fadein 2s; /* Firefox */
+  -webkit-animation: fadein 2s; /* Safari and Chrome */
+  -o-animation: fadein 2s; /* Opera */
+  }
+  @keyframes fadein {
+  from {
+    opacity:0;
+  }
+  to {
+    opacity:1;
+  }
+  }
+  @-moz-keyframes fadein { /* Firefox */
+  from {
+    opacity:0;
+  }
+  to {
+    opacity:1;
+  }
+  }
+  @-webkit-keyframes fadein { /* Safari and Chrome */
+  from {
+    opacity:0;
+  }
+  to {
+    opacity:1;
+  }
+  }
+  @-o-keyframes fadein { /* Opera */
+  from {
+    opacity:0;
+  }
+  to {
+    opacity: 1;
+  }
+  }
+
+
+  * {
+    box-sizing: border-box;
+  }
+
+  /* Create three unequal columns that floats next to each other */
+  .column {
+    float: left;
+    padding: 10px;
+  }
+
+  .left, .right {
+    width: 25%;
+    height: 100%;
+  }
+
+  .middle {
+    width: 50%;
+height: 100%;
+    border-right-style: solid;
+    border-left-style: solid;
+  }
+
+  /* Clear floats after the columns */
+  .row:after {
+    content: "";
+    display: table;
+    clear: both;
+  }
+
+  }
+  .form-popup {
+    display: none;
+    width:30%;
+    height:100%;
+    opacity: 1;
+
+    position:relative;
+    margin:auto;
+
+  }
+
+
+  /* Add styles to the form container
+  */
+  .form-container {
+    border-radius: 50px;
+    position:relative;
+    top:100px;
+    background-color: orange;
+    text-align:center;
+    background-size: 1px 300%;
+    -webkit-transition:0.5s;
+    transition:0.5s;
+    color:#006680;
+    font-family:shadows into light;
+    border: 2px solid #006680;
+    cursor:pointer;
+
+  }
+  .button {
+  background-color:orange;
+  border: none;
+  color: white;
+  padding: 16px 32px;
+  text-align: center;
+  display: inline-block;
+  font-weight: bold;
+  font-family:shadows into light;
+  margin: 4px 2px;
+  transition-duration: 0.4s;
+  cursor: pointer;
+}
+  .button2 {
+  background-color: orange;
+  color:#006680;
+  border-radius: 6px;
+  border: 2px solid #006680;
+}
+
+.button2:hover {
+  background-color: #006680;
+  color: white;
+}

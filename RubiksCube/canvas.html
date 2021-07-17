@@ -1,0 +1,337 @@
+<html>
+<head>
+  <title>Rubik's Cube</title>
+  <script src="lib/webgl-obj-loader.min.js"></script>
+  <script src="lib/utils.js"></script>
+  <script src="lib/quaternion.min.js"></script>
+  <script src="lib/twgl-full.min.js"></script>
+  <script src="lib/variables.js"></script>
+  <script src="lib/app.js"></script>
+  <script src="lib/stopwatch.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/keyboard-css@1.2.4/dist/css/main.min.css" />
+  <link rel="stylesheet" href="css/game_style.css">
+  <link rel="stylesheet" href="css/stopwatch.css" />
+
+  <script>
+  if (document.location.search.match(/type=embed/gi)) {
+    window.parent.postMessage("resize", "*");
+  }
+</script>
+</head>
+<body id = "test" translate="no" style="text-align: center;" onLoad="load_from_menu();">
+  <div id = "all"class="row">
+    <div class="column left">
+      <table >
+        <tr><td>
+          <img src="Rubiks_Title.jpg" alt="Rubik Cube" style="width:100%;"  border="5">
+        </td></tr>
+        <tr><td>
+          <div style = "border-style: solid; display: flex;">
+
+
+            <table style = "display: flex; width:100%; vertical-align: middle; font-family:shadows into light;">
+              <th><span class="text">Key</span></th>
+
+
+
+              <tr><td><button class="kbc-button kbc-button-sm">T</button></td><td style="text-align: center; vertical-align: middle;">Rotate the top facade clockwise</td></tr>
+              <tr><td><button class="kbc-button kbc-button-sm">D</button></td><td style="text-align: center; vertical-align: middle;">Rotate the bottom facade clockwise</td></tr>
+              <tr><td><button class="kbc-button kbc-button-sm">R</button></td><td style="text-align: center; vertical-align: middle;">Rotate the right facade clockwise</td></tr>
+              <tr><td><button class="kbc-button kbc-button-sm">L</button></td><td style="text-align: center; vertical-align: middle;">Rotate the left facade clockwise</td></tr>
+              <tr><td><button class="kbc-button kbc-button-sm">F</button></td><td style="text-align: center; vertical-align: middle;">Rotate the front facade clockwise</td></tr>
+              <tr><td><button class="kbc-button kbc-button-sm">B</button></td><td style="text-align: center; vertical-align: middle;">Rotate the back  facade clockwise</td></tr>
+              <tr><td style="text-align: center; vertical-align: middle;" colspan = 2>In order to rotate the facade counteclockwise:</td></tr>
+              <tr><td style="text-align: center; vertical-align: middle;"colspan = 2>Press <button class="kbc-button kbc-button-sm">Shift</button> + <button class="kbc-button kbc-button-sm">Key</button></td></tr>
+
+            </table>
+
+
+          </div>
+        </td></tr>
+      </table>
+    </div>
+    <div class="column middle">
+      <canvas id="my-canvas" style = "width:100%; height:90%;">
+        Your browser doesn't support the Canvas Element!
+      </canvas>
+
+    </div>
+    <div class="column right">
+      <div id="allthethings">
+        <center>
+          <div style="font-size: 30px;font-family:shadows into light;">
+          <div class="circle">
+            <span class="time" id="display">00:00:00</span>
+          </div>
+
+          <div class="controls">
+            <button class="buttonPlay" style="color:green">
+              <img id="playButton" src="https://res.cloudinary.com/https-tinloof-com/image/upload/v1593360448/blog/time-in-js/play-button_opkxmt.svg" />
+
+              <img id="pauseButton" src="https://res.cloudinary.com/https-tinloof-com/image/upload/v1593360448/blog/time-in-js/pause-button_pinhpy.svg" />
+            </button>
+
+            <button class="buttonReset">
+              <img id="resetButton" src="https://res.cloudinary.com/https-tinloof-com/image/upload/v1593360448/blog/time-in-js/reset-button_mdv6wf.svg" />
+            </button>
+          </div>
+          <div id="single" onclick="openOptions()"><p>OPTIONS</p></div>
+          <div id="single" onclick="scramble();"><p>SCRAMBLE</p></div>
+          <div id="single"><a onclick = "reset_cube();" style="text-decoration:none; color:orange;"><p>RESET</p></a></div>
+          <div id="single" onclick="go_to_menu();"><p>MENU</p></div>
+          <p id = "saving_cube" style = "display:none;"> </p>
+        </center>
+      </div>
+    </div>
+  </div>
+  <div class="form-popup" style = " width: 50%; display:none; margin:0 auto;" id="options_command">
+    <form class="form-container">
+      <h1>Game Settings</h1>
+      <table style = "width: 100%;">
+        <tr>
+          <td style = "text-align:center;">
+            <label style = "font-size:20px; color:#006680; font-weight:bold;" for="customRange3" class="form-label">Rotation Speed: </label>
+          </td>
+          <td style = "text-align:center;">
+            <input style = "padding:10px;" type="range" class="form-range" min="1" max="5" step="1" id="rotation_speed" value = "1">
+          </td>
+        </tr>
+        <tr>
+          <td style = "text-align:center;">
+            <label style = "font-size:20px; color:#006680; font-weight:bold;" for="customRange3" class="form-label">Ambient color</label>
+          </td>
+          <td style = "text-align:center;">
+            <div>
+              <input type="color" id="ambient_color"
+              value="#191919">
+              <label for="head">Ambient</label>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td style = "text-align:center;">
+            <label style = "font-size:20px; color:#006680; font-weight:bold;" for="customRange3" class="form-label">Light position x: </label>
+          </td>
+          <td style = "text-align:center;">
+            <input style = "padding:10px;" type="range" class="form-range" min="1" max="10" step="1.0" id="x_light" value = "2">
+          </td>
+        </tr>
+        <tr>
+          <td style = "text-align:center;">
+            <label style = "font-size:20px; color:#006680; font-weight:bold;" for="customRange3" class="form-label">Light position y: </label>
+          </td>
+          <td style = "text-align:center;">
+            <input style = "padding:10px;" type="range" class="form-range" min="1" max="10" step="1.0" id="y_light" value = "1">
+          </td>
+        </tr>
+        <tr>
+          <td style = "text-align:center;">
+            <label style = "font-size:20px; color:#006680; font-weight:bold;" for="customRange3" class="form-label">Light position z: </label>
+          </td>
+          <td style = "text-align:center;">
+            <input style = "padding:10px;" type="range" class="form-range" min="1" max="10" step="1.0" id="z_light" value = "5">
+          </td>
+        </tr>
+        <tr>
+          <td style = "text-align:center;">
+            <label style = "font-size:20px; color:#006680; font-weight:bold;" for="customRange3" class="form-label">Light color</label>
+          </td>
+          <td style = "text-align:center;">
+            <div>
+              <input type="color" id="light_color"
+                     value="#ffffff">
+              <label for="head">Point Light</label>
+          </div>
+          </td>
+        </tr>
+      </table>
+      <div onclick="closeOptions()"><button type = "button" class="button button2"> Save and close</button> </div>
+    </form>
+  </div>
+
+
+</body>
+<script>
+function hexToRgb(hex) {
+  var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result ? {
+    r: parseInt(result[1], 16),
+    g: parseInt(result[2], 16),
+    b: parseInt(result[3], 16)
+  } : null;
+}
+function rgbToHex(r, g, b) {
+  return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+}
+window.openOptions = function () {
+  var can_i_exit = save_cube();
+  if(can_i_exit){
+    var url_string = window.location.href;
+    var url = new URL(url_string);
+
+    document.getElementById("all").style.display = "none";
+    document.getElementById("options_command").style.display = "block";
+    var c = JSON.parse(url.searchParams.get("ambient"));
+    if(c!=null){
+      document.getElementById("rotation_speed").value = url.searchParams.get("rotation_speed");
+      document.getElementById("ambient_color").value = rgbToHex(c.r,c.g,c.b);
+      document.getElementById("x_light").value = url.searchParams.get("light_x");
+      document.getElementById("y_light").value = url.searchParams.get("light_y");
+      document.getElementById("z_light").value = url.searchParams.get("light_z");
+      var light_color = JSON.parse(url.searchParams.get("light"))
+      document.getElementById("light_color").value = rgbToHex(light_color.r,light_color.g,light_color.b);
+    }
+  }}
+
+  window.closeOptions = function() {
+    var url_string = window.location.href;
+    var url = new URL(url_string);
+    var actual_url = "canvas.html?";
+    if( document.getElementById('saving_cube').innerHTML != ""){
+      actual_url = actual_url  + "user_saving=" + document.getElementById('saving_cube').innerHTML + "&";
+    }
+
+    actual_url = actual_url + "rotation_speed=" + document.getElementById("rotation_speed").value;
+    actual_url = actual_url + "&ambient=" + JSON.stringify(hexToRgb(document.getElementById("ambient_color").value));
+    actual_url = actual_url + "&light_x=" + document.getElementById("x_light").value;
+    actual_url = actual_url + "&light_y=" + document.getElementById("y_light").value;
+    actual_url = actual_url + "&light_z=" + document.getElementById("z_light").value;
+    actual_url = actual_url + "&light=" + JSON.stringify(hexToRgb(document.getElementById("light_color").value));
+    window.location.href  = actual_url;
+  }
+  function reset_cube(){
+    var url_string = window.location.href;
+    var url = new URL(url_string);
+    window.location.href = "canvas.html?" +
+    "rotation_speed=" + url.searchParams.get("rotation_speed") +
+    "&ambient="+ url.searchParams.get("ambient") +
+    "&light_x=" + url.searchParams.get("light_x") +
+    "&light_y=" + url.searchParams.get("light_y") +
+    "&light_z=" + url.searchParams.get("light_z") +
+    "&light=" + url.searchParams.get("light");
+  }
+  function hexToRgb(hex) {
+    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16)
+    } : null;
+  }
+  function load_from_menu(){
+    let playButton = document.getElementById("playButton");
+    let pauseButton = document.getElementById("pauseButton");
+    let resetButton = document.getElementById("resetButton");
+
+    playButton.addEventListener("click", start);
+    pauseButton.addEventListener("click", pause);
+    resetButton.addEventListener("click", reset);
+
+
+    var url_string = window.location.href;
+    var url = new URL(url_string);
+    var c = url.searchParams.get("user_saving");
+    var received_json = '';
+    if(c != null){
+      received_json = JSON.parse(url.searchParams.get("user_saving"));
+    }
+    var ambient = (JSON.parse(url.searchParams.get("ambient")));
+    var light_color = (JSON.parse(url.searchParams.get("light")));
+    main(received_json,url.searchParams.get("rotation_speed"), [ambient.r,ambient.g,ambient.b],[url.searchParams.get("light_x"),url.searchParams.get("light_y"),url.searchParams.get("light_z")],[light_color.r,light_color.g,light_color.b]);
+  }
+</script>
+<!--Menu Script-->
+<script>
+function go_to_menu(){
+  var can_i_exit = save_cube();
+  if(can_i_exit){
+    var url_string = window.location.href;
+    var url = new URL(url_string);
+    window.location.href="index.html?" +
+    "rotation_speed=" + url.searchParams.get("rotation_speed") +
+    "&ambient="+ url.searchParams.get("ambient") +
+    "&light_x=" + url.searchParams.get("light_x") +
+    "&light_y=" + url.searchParams.get("light_y") +
+    "&light_z=" + url.searchParams.get("light_z") +
+    "&light=" + url.searchParams.get("light");}
+}
+</script>
+
+
+<script id="vs" type="notjs">
+  #version 300 es
+  in vec4 a_position;
+  in vec3 a_normal;
+  in vec2 a_texcoord;
+
+  uniform mat4 u_worldInverseTranspose;
+  uniform mat4 u_worldViewProjection;
+  uniform mat4 u_worldMatrix;
+
+  out highp vec2 vTextureCoord;
+  out highp vec3 fsPosition;
+  out highp vec3 transformedNormal;
+
+  void main(void) {
+    gl_Position = u_worldViewProjection* a_position;
+    fsPosition = (u_worldMatrix * a_position).xyz;
+    transformedNormal =  normalize((u_worldMatrix* vec4(a_normal, 1.0)).xyz);
+    vTextureCoord = a_texcoord;
+ }
+</script>
+
+<script id="fs" type="notjs">
+  #version 300 es
+  precision highp float;
+  in highp vec2 vTextureCoord;
+  in highp vec3 vLighting;
+  in highp vec3 fsPosition;
+  in highp vec3 transformedNormal;
+  uniform sampler2D u_diffuse;
+  uniform mat4 u_worldInverseTranspose;
+  uniform highp vec3 cam_pos;
+  uniform highp vec3 ambient_color;
+  uniform mat4 u_inv_matrix_view;
+  uniform highp vec3 u_pointLightColor;
+  uniform highp vec3 u_pointLightPos;
+
+  out vec4 outColor;
+
+  vec4 compDiffuse(vec3 lightDir, vec4 lightCol, vec3 normalVec, vec4 diffColor) {
+    // Diffuse
+    // --> Lambert
+    vec4 diffuseLambert = lightCol * clamp(dot(normalVec, lightDir),0.0,1.0) * diffColor;
+    // ----> Select final component
+    return diffuseLambert;
+  }
+
+  vec4 compPhongSpecular(vec3 lightDir, vec3 normalVec, vec3 eyedirVec, float SpecShine, vec4 lightColor, vec4 specularColor){
+    //phong specular
+    vec4 spec = lightColor * specularColor * max(sign(max(0.0, dot(normalVec, lightDir))),0.0)* pow(max(dot(-reflect(lightDir, normalVec), eyedirVec), 0.0), SpecShine);
+
+    return spec;
+  }
+
+  void main(void) {
+    highp vec4 texelColor = texture(u_diffuse , vTextureCoord);
+    highp vec4 ambientLight = vec4(ambient_color, 1);
+  /*  mediump float delta_x_cam_par = 2.0;
+    mediump float delta_y_cam_par = 1.0;
+    mediump float delta_z_cam_par = 5.0;
+*/
+    //highp vec3 Pos = vec3(cam_pos.x+delta_x_cam, cam_pos.y + delta_y_cam, cam_pos.z+delta_z_cam);
+    highp vec3 Pos = (u_inv_matrix_view * vec4(u_pointLightPos, 1.0)).xyz;
+    //highp vec3 Pos = vec3(cam_pos.x+delta_x_cam_par, cam_pos.y + delta_y_cam_par, cam_pos.z+delta_z_cam_par);
+    //highp vec4 pointLightColor = vec4(2.0, 2.0, 2.0, 1.0);
+    vec3 OlightDir = normalize(Pos - fsPosition);
+    vec3 eyeDir = normalize(cam_pos - fsPosition);
+
+    vec4 diffuse = compDiffuse(OlightDir, vec4(u_pointLightColor,1.0), transformedNormal, texelColor);//(vec3 lightDir, vec4 lightCol, vec3 normalVec, vec4 diffColor)
+    vec4 spec = compPhongSpecular(OlightDir, transformedNormal, eyeDir, 100.0, vec4(u_pointLightColor,1.0), vec4(1.0, 1.0, 1.0, 1.0));
+
+    highp vec4 vLighting = clamp(ambientLight*texelColor + diffuse + spec, 0.0, 1.0);
+    outColor = vec4(vLighting.rgb, texelColor.a);
+  }
+</script>
+
+</html>

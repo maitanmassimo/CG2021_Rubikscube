@@ -1,0 +1,262 @@
+<html>
+<head>
+  <title>Rubik's Cube</title>
+  <script src="lib/webgl-obj-loader.min.js"></script>
+  <script src="lib/utils.js"></script>
+  <script src="lib/quaternion.min.js"></script>
+  <script src="lib/twgl-full.min.js"></script>
+  <script src="lib/rotation_model.js"></script>
+  <link rel="stylesheet" href="css/menu_style.css">
+
+
+<script>
+  if (document.location.search.match(/type=embed/gi)) {
+    window.parent.postMessage("resize", "*");
+  }
+</script>
+</head>
+<body translate="no" onLoad="load_menu();">
+<div id="allthethings">
+  <div id="left"></div>
+	<div id="single" onclick="transitionToPageNew('canvas.html');"><p>NEW GAME</p></div>
+  <div id="multiplayer" onclick="transitionToPageContinue('canvas.html')"><p>CONTINUE</p></div>
+  <div id="no-multiplayer"><p>CONTINUE</p></div>
+  <div id="options" onclick="openOptions()"><p>OPTIONS</p></div>
+  <div id="credits"><p>CREDITS</p></div>
+  <div id="right"></div>
+
+  <div id="exit"></div>
+  <div id="circle"></div>
+
+  <div id="rubik_cube">
+    <canvas id="my-canvas" width='800' height='500' style = "
+    height:300px;
+    width:500px;
+    background:orange;
+    position:relative;
+    bottom:300px;
+    right:240px;
+    text-align:center;
+
+    color:orange;
+    z-index: 100;
+     ">
+			Your browser doesn't support the Canvas Element!
+		</canvas>
+  </div>
+</div>
+<div class="form-popup" id="options_command">
+  <form class="form-container">
+    <h1>Game Settings</h1>
+    <table style = "width: 100%;">
+      <tr>
+        <td style = "text-align:center;">
+          <label style = "font-size:20px; color:#006680; font-weight:bold;" for="customRange3" class="form-label">Rotation Speed: </label>
+        </td>
+        <td style = "text-align:center;">
+          <input style = "padding:10px;" type="range" class="form-range" min="1" max="5" step="1" id="rotation_speed" value = "1">
+        </td>
+      </tr>
+      <tr>
+        <td style = "text-align:center;">
+          <label style = "font-size:20px; color:#006680; font-weight:bold;" for="customRange3" class="form-label">Ambient color</label>
+        </td>
+        <td style = "text-align:center;">
+          <div>
+            <input type="color" id="ambient_color"
+                   value="#191919">
+            <label for="head">Ambient</label>
+        </div>
+        </td>
+      </tr>
+
+      <tr>
+        <td style = "text-align:center;">
+          <label style = "font-size:20px; color:#006680; font-weight:bold;" for="customRange3" class="form-label">Light position x: </label>
+        </td>
+        <td style = "text-align:center;">
+          <input style = "padding:10px;" type="range" class="form-range" min="1" max="10" step="1.0" id="x_light" value = "2">
+        </td>
+      </tr>
+      <tr>
+        <td style = "text-align:center;">
+          <label style = "font-size:20px; color:#006680; font-weight:bold;" for="customRange3" class="form-label">Light position y: </label>
+        </td>
+        <td style = "text-align:center;">
+          <input style = "padding:10px;" type="range" class="form-range" min="1" max="10" step="1.0" id="y_light" value = "1">
+        </td>
+      </tr>
+      <tr>
+        <td style = "text-align:center;">
+          <label style = "font-size:20px; color:#006680; font-weight:bold;" for="customRange3" class="form-label">Light position z: </label>
+        </td>
+        <td style = "text-align:center;">
+          <input style = "padding:10px;" type="range" class="form-range" min="1" max="10" step="1.0" id="z_light" value = "5">
+        </td>
+      </tr>
+      <tr>
+        <td style = "text-align:center;">
+          <label style = "font-size:20px; color:#006680; font-weight:bold;" for="customRange3" class="form-label">Light color</label>
+        </td>
+        <td style = "text-align:center;">
+          <div>
+            <input type="color" id="light_color"
+                   value="#ffffff">
+            <label for="head">Point Light</label>
+        </div>
+        </td>
+      </tr>
+    </table>
+    <div onclick="closeOptions()"><button type = "button" class="button button2"> Save and close</button> </div>
+  </form>
+</div>
+
+
+
+
+
+
+
+</body>
+
+<script type="application/javascript">
+
+  window.transitionToPageNew = function(href) {
+    var url_string = window.location.href;
+    var url = new URL(url_string);
+    var params = "?";
+    if(url.searchParams.get("rotation_speed")== null){
+    params = params + "rotation_speed=" + document.getElementById("rotation_speed").value;
+    params = params + "&ambient=" + JSON.stringify(hexToRgb(document.getElementById("ambient_color").value));
+    params = params + "&light_x=" + document.getElementById("x_light").value;
+    params = params + "&light_y=" + document.getElementById("y_light").value;
+    params = params + "&light_z=" + document.getElementById("z_light").value;
+    params = params + "&light=" + JSON.stringify(hexToRgb(document.getElementById("light_color").value));
+  }else{
+    params = params + "rotation_speed=" + url.searchParams.get("rotation_speed");
+    params = params + "&ambient=" + url.searchParams.get("ambient");
+    params = params + "&light_x=" + url.searchParams.get("light_x");
+    params = params + "&light_y=" + url.searchParams.get("light_y");
+    params = params + "&light_z=" + url.searchParams.get("light_z");
+    params = params + "&light=" + url.searchParams.get("light");
+  }
+    document.querySelector('body').style.opacity = 0
+    setTimeout(function() {
+      window.location.href = href + params;
+    }, 500)
+}
+  window.transitionToPageContinue = function(href) {
+//  var SearchString = window.location.search.substring(1);
+  var url_string = window.location.href;
+  var url = new URL(url_string);
+  if(url.searchParams.get("user_saving") != null){
+    var params = "?";
+    params = params + "user_saving=" + url.searchParams.get("user_saving");
+    params = params + "&rotation_speed=" + url.searchParams.get("rotation_speed");
+    params = params + "&ambient=" + url.searchParams.get("ambient");
+    params = params + "&light_x=" + url.searchParams.get("light_x");
+    params = params + "&light_y=" + url.searchParams.get("light_y");
+    params = params + "&light_z=" + url.searchParams.get("light_z");
+    params = params + "&light=" + url.searchParams.get("light");
+    document.querySelector('body').style.opacity = 0
+    setTimeout(function() {
+      window.location.href = href + params;
+    }, 500)
+  }
+
+}
+
+  document.addEventListener('DOMContentLoaded', function(event) {
+  document.querySelector('body').style.opacity = 1
+})
+  function load_menu(){
+    var url_string = window.location.href;
+    var url = new URL(url_string);
+    var c = url.searchParams.get("user_saving");
+    if(c == null){
+      document.getElementById('multiplayer').style.display= 'none';
+      document.getElementById('no-multiplayer').style.display= 'block';
+    }else{
+      document.getElementById('multiplayer').style.display= 'block';
+        document.getElementById('no-multiplayer').style.display= 'none';
+    }
+    main();
+  }
+  function hexToRgb(hex) {
+    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16)
+    } : null;
+  }
+  function rgbToHex(r, g, b) {
+    return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+  }
+  window.openOptions = function () {
+    document.getElementById("allthethings").style.display = "none";
+    document.getElementById("options_command").style.display = "block";
+    var url_string = window.location.href;
+    var url = new URL(url_string);
+    var c = JSON.parse(url.searchParams.get("ambient"));
+    if(c!=null){
+      document.getElementById("rotation_speed").value = url.searchParams.get("rotation_speed");
+      document.getElementById("ambient_color").value = rgbToHex(c.r,c.g,c.b);
+      document.getElementById("x_light").value = url.searchParams.get("light_x");
+      document.getElementById("y_light").value = url.searchParams.get("light_y");
+      document.getElementById("z_light").value = url.searchParams.get("light_z");
+      c = JSON.parse(url.searchParams.get("light"));
+      document.getElementById("light_color").value = rgbToHex(c.r,c.g,c.b);
+      }
+  }
+
+  window.closeOptions = function() {
+    var url_string = window.location.href;
+    var url = new URL(url_string);
+      var actual_url = "index.html?";
+    if(url.searchParams.get("user_saving") != null){
+      actual_url = actual_url  + "user_saving=" + url.searchParams.get("user_saving") + "&";
+    }
+      actual_url = actual_url + "rotation_speed=" + document.getElementById("rotation_speed").value;
+      actual_url = actual_url + "&ambient=" + JSON.stringify(hexToRgb(document.getElementById("ambient_color").value));
+      actual_url = actual_url + "&light_x=" + document.getElementById("x_light").value;
+      actual_url = actual_url + "&light_y=" + document.getElementById("y_light").value;
+      actual_url = actual_url + "&light_z=" + document.getElementById("z_light").value;
+      actual_url = actual_url + "&light=" + JSON.stringify(hexToRgb(document.getElementById("light_color").value));
+    window.location.href  = actual_url;
+    document.getElementById("options_command").style.display = "none";
+    document.getElementById("allthethings").style.display = "block";
+  }
+</script>
+
+<script id="vs" type="notjs">
+ uniform mat4 u_worldViewProjection;
+
+  attribute vec4 a_position;
+  attribute vec2 a_texcoord;
+
+  varying vec4 v_position;
+  varying vec2 v_texCoord;
+
+  void main() {
+  v_texCoord = a_texcoord;
+  gl_Position = u_worldViewProjection * a_position;
+}
+</script>
+
+<script id="fs" type="notjs">
+ precision mediump float;
+
+  varying vec4 v_position;
+  varying vec2 v_texCoord;
+
+  //uniform vec4 u_diffuseMult;
+  uniform sampler2D u_diffuse;
+
+  void main() {
+  //  vec4 diffuseColor = //* u_diffuseMult;
+
+  gl_FragColor = texture2D(u_diffuse, v_texCoord) ;
+}
+</script>
+</html>
